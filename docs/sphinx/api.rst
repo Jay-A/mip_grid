@@ -1,13 +1,13 @@
 API Reference
-=============
+==============
 
 This section contains the complete C++ API generated from Doxygen.
 
 Core Data Structures
---------------------
+---------------------
 
 Grid Specification
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 .. doxygenstruct:: GridSpec
    :project: SyntheticGrid
@@ -15,7 +15,7 @@ Grid Specification
    :undoc-members:
 
 Injected Grid
-~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 .. doxygenclass:: InjectedGrid
    :project: SyntheticGrid
@@ -26,7 +26,7 @@ Time Series System
 -------------------
 
 TimeSeries
-~~~~~~~~~
+~~~~~~~~~~~
 
 .. doxygenclass:: TimeSeries
    :project: SyntheticGrid
@@ -34,7 +34,7 @@ TimeSeries
    :undoc-members:
 
 TimeSeriesConstructor
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 
 .. doxygenclass:: TimeSeriesConstructor
    :project: SyntheticGrid
@@ -42,10 +42,10 @@ TimeSeriesConstructor
    :undoc-members:
 
 Configuration
--------------
+--------------
 
 TimeSeriesAttributes
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
 
 .. doxygenstruct:: TimeSeriesAttributes
    :project: SyntheticGrid
@@ -53,7 +53,7 @@ TimeSeriesAttributes
    :undoc-members:
 
 YamlConfigLoader
-~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~
 
 .. doxygenclass:: YamlConfigLoader
    :project: SyntheticGrid
