@@ -1,0 +1,102 @@
+# =================================================
+# DENY BY DEFAULT
+# =================================================
+*
+
+# =================================================
+# Allow git metadata + this file
+# =================================================
+!.gitignore
+
+# =================================================
+# Core project metadata
+# =================================================
+!README.md
+!LICENSE
+!CMakeLists.txt
+!requirements.txt
+
+# =================================================
+# cmake for config file
+# =================================================
+!cmake/
+!cmake/Config.cmake
+
+# =================================================
+# Source code (C++)
+# =================================================
+!cpp/
+!cpp/CMakeLists.txt
+!cpp/include/
+!cpp/src/
+
+# current dir org has all source & headers setting 
+#  first level in include and src
+#  if that changes later update for recursion
+#  !cpp/include/**/*.h, not needed now
+!cpp/include/*.h
+!cpp/include/*.hpp
+!cpp/src/*.cpp
+!cpp/src/*.h
+
+# =================================================
+# Examples
+# =================================================
+!examples/
+!examples/*.cpp
+!examples/*.h
+!examples/*.hpp
+!examples/*.json
+!examples/CMakeLists.txt
+
+# =================================================
+# Python API / solver frontend
+# =================================================
+!python/
+!python/*.py
+
+# =================================================
+# Scripts
+# =================================================
+!scripts/
+!scripts/env.sh.localexample
+!scripts/**/*.sh
+
+# =================================================
+# Tests
+# =================================================
+# Ensure the tests folder itself is tracked
+!tests/
+# Ensure all subdirectories are recursively unignored
+!tests/include/
+!tests/mpi/
+!tests/python/
+!tests/unit/
+
+!tests/CMakeLists.txt
+
+# Then track the actual files
+!tests/**/*.cpp
+!tests/**/*.h
+# only track py files in the correct directory
+!tests/python/**/*.py  
+
+# =================================================
+# Docs
+# =================================================
+!docs/
+!docs/Doxyfile
+!docs/sphinx/
+!docs/sphinx/**/*.rst
+!docs/sphinx/**/*.py
+!docs/sphinx/conf.py
+!docs/sphinx/.gitkeep
+!docs/latex/
+!docs/latex/.gitkeep
+!docs/latex/*.tex
+!docs/figures/
+!docs/figures/.gitkeep
+
+*.swp
+*.swo
+.DS_Store
