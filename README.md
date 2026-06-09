@@ -42,19 +42,65 @@ This platform is intended for **researchers and developers** exploring power gri
 ### Prerequisites
 
 - C++17 compiler (GCC/Clang)  
-- CMake b	% 3.18  
+- CMake >= 3.18  
 - HDF5 library  
-- Python b	% 3.9 (for solver API)  
+- Python >= 3.9 (for solver API)  
 - Optional: Graphviz for DOT visualization  
 
 ### Build
 
 ```bash
-git clone <repo-url>
-cd mip_grid
-mkdir build && cd build
-cmake ..
-make
+git clone https://github.com/Jay-A/mip_grid.git
+```
+
+The project has three external dependencies: **JSON**, **HDF5**, and **MPI**.
+
+As of the initial commit, the build has only been tested with:
+
+- GCC 12
+- OpenMPI 4.1.2
+- HDF5-serial 1.14.0
+
+The `scripts/env.sh.localexample` file shows how to either load these as modules or point to local installations.
+
+The JSON header can be downloaded directly from `https://github.com/nlohmann/json/` with 
+
+```bash
+mkdir -p external 
+wget https://github.com/nlohmann/json/releases/download/v3.11.2/json.hpp -O external/json.hpp
+```
+
+When all externals have been loaded or added to path build is simply done with
+
+```bash
+./scripts/build_cpp.sh
+```
+
+where
+```bash
+./scripts/build_cpp.sh --help
+```
+
+reveals usage guidelines:
+```console
+Usage: build_cpp.sh [MODE] [-b BUILD_TYPE]
+
+Modes:
+  build        Configure (if needed) + build (DEFAULT)
+  configure    Only run CMake configure step
+  clean        Remove build directory only
+  rebuild      Clean + configure + build
+
+Options:
+  -b, --build-type <type>    Debug, Release, RelWithDebInfo, MinSizeRel
+  -h, --help                 Show help
+
+Examples:
+  build_cpp.sh                     # build (default Release)
+  build_cpp.sh build -b Debug
+  build_cpp.sh rebuild -b Release
+  build_cpp.sh configure -b Debug
+  build_cpp.sh clean
 ```
 
 Binary outputs will be in `build/bin/mip_grid`.
@@ -66,7 +112,7 @@ Binary outputs will be in `build/bin/mip_grid`.
 ### Generate HDF5 Grid Snapshot
 
 ```bash
-build/bin/mip_grid -i configs/small.yaml
+build/bin/mip_grid -i ../../examples/example_json_input.json
 ```
 
 Output:
@@ -75,12 +121,14 @@ Output:
 Successfully wrote: grid_timeseries.h5
 ```
 
+The .h5 file can be explored with h5ls or in python.
+
 ---
 
 ### View Grid Graph
 
 ```bash
-build/bin/mip_grid -i configs/small.yaml -v
+build/bin/mip_grid -i ../../examples/example_json_input.json -v
 dot -Tpng grid.dot -o grid.png
 xdg-open grid.png
 ```
@@ -90,14 +138,23 @@ xdg-open grid.png
 ### Export Grid to CSV
 
 ```bash
-build/bin/mip_grid -i configs/small.yaml --export-csv
+build/bin/mip_grid -i ../../examples/example_json_input.json --export-csv
 ```
 
 ---
 
 ## Python Integration
 
-Once a grid HDF5 snapshot is generated, it can be loaded in Python for solver workflows:
+The long-term goal is a fully integrated workflow in which a parallel MIP solver
+calls the C++ power-grid generation backend directly from Python, consumes the
+resulting HDF5 snapshots, performs optimization, and returns solutions for
+analysis and visualization in the Python frontend.
+
+The optimization backend is still under active development. For now, generated
+HDF5 snapshots can be loaded into Python and used with external solvers such as
+Gurobi.
+
+A grid HDF5 snapshot can be loaded in Python for solver workflows:
 
 ```python
 from python.snapshot_loader import SnapshotLoader
@@ -114,29 +171,46 @@ model.build_mip(solver)
 
 # Solve
 solver.optimize()
+```
+
+---
 
 ---
 
 ## Configuration Files
 
-The system is driven by YAML/JSON configuration files located in `configs/`.
+The system is driven by JSON GridSpec and TimeSeries configuration files, for example
+`examples/example_json_input.json`.
 
 Each configuration defines:
 
-- Grid size and topology parameters  
-- Random seed for reproducibility  
-- Generator/load ratios  
-- Edge capacity and reactance ranges  
-- Time series generation settings  
+### Grid Generation
 
-Example files:
+- Number of nodes in the synthetic network
+- Generator and load node ratios
+- Connectivity and feasibility requirements
+- Branching and topology controls
+  - ring backbone support
+  - cross-link insertion
+  - branch factor
+- Random seeds for deterministic generation
+- Generator capacity ranges
+- Load demand ranges
+- Transmission line capacity ranges
+- Transmission line reactance ranges
+- Node and edge failure probabilities
 
-- `small.yaml` b
- minimal test grid for CI validation  
-- `medium.yaml` b
- moderate-scale research grid  
-- `large.yaml` b
- high-scale performance benchmarking grid  
+### Time-Series Generation
+
+- Number of timesteps
+- Sampling frequency
+- Demand modulation amplitude
+- Generator modulation amplitude
+- Noise amplitude
+- Independent random seed
+- Dataset label metadata
+
+Using fixed seeds produces reproducible grid topologies and time-series realizations, which is useful for testing, benchmarking, and optimization studies.
 
 ---
 
@@ -185,7 +259,7 @@ The repository includes example programs for common workflows:
 After building:
 
 ```bash
-build/bin/mip_grid -i configs/small.yaml
+build/bin/mip_grid -i examples/example_json_input.json
 ```
 
 
@@ -193,13 +267,13 @@ Optional modes:
 
 - Visualization only:
   ```bash
-  build/bin/mip_grid -i configs/small.yaml -v
+  build/bin/mip_grid -i examples/example_json_input.json -v
   ```
 
 - CSV export of static grid topology:
 
   ```bash
-  build/bin/mip_grid -i configs/small.yaml --export-csv
+  build/bin/mip_grid -i examples/example_json_input.json --export-csv
   ```
 
 - Display help / usage information:
