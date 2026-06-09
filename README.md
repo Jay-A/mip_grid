@@ -1,5 +1,8 @@
 # MIP Grid: Power Grid Numerical Methods Research Platform
 
+[![Documentation](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://jay-a.github.io/mip_grid/)
+
+
 **MIP Grid** is a research-oriented platform for numerical analysis of power grids, providing:  
 
 - Synthetic grid generation with configurable topology and attributes  
