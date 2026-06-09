@@ -15,17 +15,20 @@
  * @defgroup grid_builder GridBuilder
  * @brief Controlled construction layer for Grid generation.
  *
- * @section overview Overview
  * GridBuilder provides a controlled, incremental API for constructing a Grid.
- *
  * It is the only component allowed to mutate graph structure before finalization.
  * After build(), ownership is transferred into an immutable Grid instance.
  *
  * @section design Design Philosophy
- * - Separate mutation (build phase) from usage (runtime phase)
+ * - Separate mutation (build phase) from runtime usage
  * - Ensure deterministic and validated graph construction
  * - Use move semantics for zero-copy transfer
  * - Enforce ID-based topology semantics (no raw container exposure)
+ *
+ * @section type_summary Type Dependencies (from Types.h)
+ * - NodeID   -> std::uint32_t : Node identifier
+ * - EdgeID   -> std::uint32_t : Edge identifier
+ * - NodeType -> enum class    : Node classification
  *
  * @note GridBuilder is not thread-safe.
  */
@@ -83,17 +86,19 @@ public:
     /**
      * @brief Add a new node to the graph.
      *
-     * @return NodeID Identifier of the newly created node.
+     * @return NodeID Identifier of the newly created node (uint32_t)
      *
      * @details Node IDs are assigned sequentially starting from 0.
+     *
+     * @see Grid, NodeType, add_edge()
      */
     NodeID add_node();
 
     /**
      * @brief Assign a functional type to a node.
      *
-     * @param id Node identifier.
-     * @param type Node role classification.
+     * @param id Node identifier (NodeID / uint32_t)
+     * @param type Node role classification (NodeType)
      *
      * @throws std::out_of_range if NodeID is invalid.
      */
@@ -102,8 +107,8 @@ public:
     /**
      * @brief Add a directed edge between two nodes.
      *
-     * @param from Source node identifier.
-     * @param to Destination node identifier.
+     * @param from Source node identifier (NodeID / uint32_t)
+     * @param to Destination node identifier (NodeID / uint32_t)
      *
      * @throws std::out_of_range if either NodeID is invalid.
      *
@@ -118,16 +123,24 @@ public:
 
     /**
      * @brief Get number of nodes currently in the builder.
+     *
+     * @return NodeID / uint32_t
      */
     [[nodiscard]] NodeID num_nodes() const noexcept;
 
     /**
      * @brief Get number of edges currently in the builder.
+     *
+     * @return EdgeID / uint32_t
      */
     [[nodiscard]] NodeID num_edges() const noexcept;
 
     /**
      * @brief Inspect node type (builder-time view).
+     *
+     * @param id NodeID / uint32_t
+     *
+     * @return NodeType
      *
      * @throws std::out_of_range if NodeID is invalid.
      */
@@ -138,13 +151,23 @@ public:
      *
      * @warning Intended only for topology analysis during build phase.
      * Must not be used after build().
+     *
+     * @return const reference to vector of Edge
      */
     [[nodiscard]] const std::vector<Edge>& edges() const noexcept;
 
+    /**
+     * @brief Read-only access to node type vector during construction.
+     *
+     * @return const reference to vector of NodeType
+     */
     [[nodiscard]] const std::vector<NodeType>& node_types() const noexcept;
 
     /**
      * @brief Inspect node existence via ID.
+     *
+     * @param id NodeID / uint32_t
+     * @return true if node exists, false otherwise
      */
     [[nodiscard]] bool has_node(NodeID id) const noexcept;
 
@@ -179,12 +202,15 @@ private:
     // Internal construction state
     // ============================================================
 
+    /// Internal Grid instance under construction
     Grid m_grid;
 
     /**
      * @brief Internal validation helper.
      *
      * Ensures graph consistency before finalization.
+     *
+     * @throws std::runtime_error if the graph violates invariants.
      */
     void validate() const;
 };

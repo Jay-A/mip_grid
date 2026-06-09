@@ -10,58 +10,57 @@
  * @file GridValidator.h
  * @brief Rule-based validation engine for synthetic power grid graphs.
  *
- * This file defines GridValidator, a reusable evaluation object that
- * checks whether a generated Grid satisfies a given set of validation rules.
+ * @defgroup grid_validator GridValidator
+ * @brief Evaluates whether a constructed Grid satisfies structural and feasibility rules.
  *
- * GridValidator is intentionally decoupled from GridGenerator and GridSpec.
- * It operates only on fully constructed Grid objects and does not participate
- * in graph construction.
+ * GridValidator operates on fully constructed Grid objects.
+ * It does NOT participate in grid construction and is fully decoupled
+ * from GridGenerator, GridSpec, and GridInjector.
  *
- * This design enables:
+ * ## Design Goals
  * - Independent correctness verification
- * - Batch validation of large-scale graphs (10k+ nodes)
- * - Reusable rule contexts across multiple grids
- * - MPI-friendly stateless evaluation workflows (aside from rule configuration)
+ * - Reusable rule contexts for batch validation
+ * - Lightweight, MPI-friendly evaluation (stateless aside from rules)
+ * - Efficient precomputation of derived rule structures
  */
 
 /**
  * @struct ValidationRules
- * @brief Configuration object defining feasibility and structural constraints.
+ * @ingroup grid_validator
+ * @brief Feasibility and structural constraints for grid validation.
  *
- * ValidationRules defines how a Grid should be evaluated.
- * It does not contain graph data or state.
+ * This object defines how a Grid should be evaluated.
+ * It contains no runtime graph state.
  */
 struct ValidationRules {
 
-    /**
-     * @brief Require the graph to be fully connected.
-     *
-     * If true, all nodes must belong to a single connected component.
-     */
-    bool require_connected = true;
+    // ============================================================
+    // Connectivity rules
+    // ============================================================
 
-    /**
-     * @brief Maximum allowed fraction of loads not connected to any generator.
-     *
-     * Value range:
-     * - 0.0 b
-     * - 1.0 b
-     */
-    double max_unserved_load_fraction = 0.0;
+    bool require_connected = true; ///< Require a single connected component
+
+    // ============================================================
+    // Load service rules
+    // ============================================================
+
+    double max_unserved_load_fraction = 0.0; ///< Maximum fraction of loads not reachable from a generator
 };
 
 /**
  * @class GridValidator
+ * @ingroup grid_validator
  * @brief Evaluation engine for validating Grid objects against rules.
  *
- * GridValidator is a lightweight, reusable object that applies a fixed
- * set of ValidationRules to one or more Grid instances.
- *
- * The validator may precompute internal structures derived from rules
- * to improve performance in batch validation scenarios.
+ * GridValidator applies a fixed ValidationRules instance to one or more Grids.
+ * It may precompute internal structures derived from the rules for efficiency.
  */
 class GridValidator {
 public:
+
+    // ============================================================
+    // Construction
+    // ============================================================
 
     /**
      * @brief Construct a validator with a given rule set.
@@ -70,34 +69,39 @@ public:
      */
     explicit GridValidator(const ValidationRules& rules);
 
+    // ============================================================
+    // Validation API
+    // ============================================================
+
     /**
-     * @brief Check whether a grid satisfies the configured validation rules.
+     * @brief Check whether a grid satisfies all configured validation rules.
      *
-     * @param grid The Grid object to validate.
-     * @return true if the grid satisfies all rules, false otherwise.
+     * @param grid Grid to evaluate
+     * @return true if all rules are satisfied
      */
     bool is_valid(const Grid& grid) const;
 
     /**
-     * @brief Check whether the grid is fully connected.
+     * @brief Check if all nodes are in a single connected component.
      *
-     * @param grid The Grid object to evaluate.
-     * @return true if all nodes are in a single connected component.
+     * @param grid Grid to evaluate
+     * @return true if fully connected
      */
     bool is_connected(const Grid& grid) const;
 
     /**
      * @brief Compute fraction of loads not reachable from any generator.
      *
-     * @param grid The Grid object to evaluate.
-     * @return Fraction in range [0.0, 1.0].
+     * @param grid Grid to evaluate
+     * @return Fraction in range [0.0, 1.0]
      */
     double unserved_load_fraction(const Grid& grid) const;
 
 private:
 
-    /**
-     * @brief Stored validation rules for this validator instance.
-     */
-    ValidationRules rules_;
+    // ============================================================
+    // Internal state
+    // ============================================================
+
+    ValidationRules rules_; ///< Stored validation rules
 };

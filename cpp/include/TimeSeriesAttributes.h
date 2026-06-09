@@ -7,15 +7,17 @@
  * @file TimeSeriesAttributes.h
  * @brief Configuration struct for deterministic time series generation.
  *
- * This struct encapsulates all user-controllable parameters for 
- * generating node-wise synthetic demand and generation profiles. 
- * It is intended to be passed to \ref TimeSeriesConstructor for 
- * deterministic construction of a \ref TimeSeries object.
+ * @defgroup ts_attributes TimeSeriesAttributes
+ * @brief User-controllable parameters for synthetic demand/generation profiles.
+ *
+ * TimeSeriesAttributes encapsulates all parameters required for generating
+ * node-wise deterministic time series. It is intended to be passed to
+ * \ref TimeSeriesConstructor for constructing a \ref TimeSeries object.
  *
  * @section design Design Philosophy
  * - Simple, header-only configuration
  * - Serializable and copyable
- * - No internal logic, pure data
+ * - Pure data (no internal logic)
  * - Deterministic via RNG seed
  *
  * @section usage Example
@@ -28,6 +30,12 @@
  * attr.noise_amplitude = 0.01;
  * attr.seed = 42;
  * @endcode
+ *
+ * @section type_summary Type dependencies
+ * - std::size_t -> timesteps and sampling frequency
+ * - double      -> modulation amplitudes and noise
+ * - uint64_t    -> RNG seed
+ * - std::string -> optional label
  */
 struct TimeSeriesAttributes {
 
@@ -54,7 +62,7 @@ struct TimeSeriesAttributes {
 
     /**
      * @brief Default constructor.
-     * 
+     *
      * Initializes attributes with typical defaults:
      * - 24 timesteps (hourly)
      * - 60 min sample frequency

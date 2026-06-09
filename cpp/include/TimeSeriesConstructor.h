@@ -11,18 +11,19 @@
  * @file TimeSeriesConstructor.h
  * @brief Deterministic generator for node-wise time series data.
  *
- * This class is responsible for constructing a fully deterministic
- * \ref TimeSeries object from an \ref InjectedGrid and a
- * \ref TimeSeriesAttributes configuration.
+ * @defgroup ts_constructor TimeSeriesConstructor
+ * @brief Stateless builder for fully deterministic TimeSeries objects.
  *
- * It acts as a stateless construction layer, similar in design to
- * \ref GridInjector:
- *
- * InjectedGrid + TimeSeriesAttributes b
+ * TimeSeriesConstructor produces immutable \ref TimeSeries objects from a
+ * given \ref InjectedGrid and \ref TimeSeriesAttributes configuration.
+ * It enforces:
+ * - Deterministic output for identical inputs
+ * - No mutation of grid or attributes
+ * - Separation of grid physics from dynamic time series construction
  *
  * @section design Design Philosophy
  * - Stateless construction API
- * - Deterministic outputs given (grid, attributes)
+ * - Deterministic outputs given (grid + attributes)
  * - No mutation of inputs
  * - Separation of physics (InjectedGrid) and dynamics (TimeSeries)
  *
@@ -43,6 +44,12 @@
  * TimeSeriesConstructor constructor;
  * TimeSeries ts = constructor.construct(injected_grid, attributes);
  * @endcode
+ *
+ * @section type_summary Type dependencies
+ * - NodeID   -> Node index (uint32_t)
+ * - TimeStep -> Timestep index (uint32_t / size_t)
+ * - double   -> Modulation factors
+ * - uint64_t -> RNG seed
  */
 class TimeSeriesConstructor {
 public:
@@ -52,7 +59,6 @@ public:
      *
      * @param grid Fully injected grid (contains node types + static attributes)
      * @param attr Time series configuration parameters
-     *
      * @return Immutable TimeSeries object containing all node-wise trajectories
      *
      * @note Deterministic for identical inputs (grid + attr)
@@ -69,9 +75,13 @@ private:
     /**
      * @brief Generate sinusoidal modulation factor for demand.
      *
-     * Used to simulate diurnal load variation.
+     * Simulates diurnal load variation.
+     *
+     * @param t Current timestep
+     * @param T Total number of timesteps
+     * @param amplitude Modulation amplitude [0.0, 1.0]
+     * @return Multiplicative modulation factor
      */
-    // TimeSeriesConstructor.h
     double demand_modulation(TimeStep t, 
                              TimeStep T, 
                              double amplitude) const;
@@ -79,7 +89,12 @@ private:
     /**
      * @brief Generate sinusoidal modulation factor for generation.
      *
-     * Can be disabled via amplitude = 0.
+     * Can be disabled by setting amplitude = 0.
+     *
+     * @param t Current timestep
+     * @param T Total number of timesteps
+     * @param amplitude Modulation amplitude [0.0, 1.0]
+     * @return Multiplicative modulation factor
      */
     double generation_modulation(TimeStep t,
                                  TimeStep T, 
@@ -87,6 +102,13 @@ private:
 
     /**
      * @brief Deterministic RNG seed initialization helper.
+     *
+     * Combines base seed with node ID and generator flag to produce unique seeds.
+     *
+     * @param base_seed Base RNG seed
+     * @param node_id Node index
+     * @param is_generator True if node is a generator, false otherwise
+     * @return Deterministic per-node RNG seed
      */
     std::uint64_t make_seed(std::uint64_t base_seed,
                             NodeID node_id,
