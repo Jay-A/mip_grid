@@ -7,6 +7,9 @@
 # Allow git metadata + this file
 # =================================================
 !.gitignore
+!.github/
+!.github/workflows/
+!.github/workflows/docs.yml
 
 # =================================================
 # Core project metadata
